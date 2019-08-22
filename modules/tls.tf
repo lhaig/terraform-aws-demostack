@@ -150,7 +150,7 @@ resource "tls_locally_signed_cert" "workers" {
 
 // ALB certs
 resource "aws_acm_certificate" "cert" {
-  domain_name       = "*.${var.namespace}.hashidemos.io"
+  domain_name       = "*.${var.namespace}.aws.hashidemos.io"
   validation_method = "DNS"
 
   tags = {
