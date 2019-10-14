@@ -1,13 +1,9 @@
 output "servers" {
-  value = [aws_route53_record.servers.*.fqdn]
+  value = aws_route53_record.servers.*.fqdn
 }
 
 output "workers" {
-  value = [aws_route53_record.workers.*.fqdn]
-}
-
-output "hashi_ui" {
-  value = "http://${aws_route53_record.hashiui.fqdn}:3000"
+  value = aws_route53_record.workers.*.fqdn
 }
 
 output "fabio_lb" {

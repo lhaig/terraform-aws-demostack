@@ -26,6 +26,7 @@ data "template_file" "server" {
     me_ca   = var.ca_cert_pem
     me_cert = "${element(tls_locally_signed_cert.server.*.cert_pem, count.index)}"
     me_key  = "${element(tls_private_key.server.*.private_key_pem, count.index)}"
+    public_key = var.public_key
 
     # Consul
     consul_url            = var.consul_url
@@ -40,10 +41,11 @@ data "template_file" "server" {
     nomad_url        = var.nomad_url
     nomad_gossip_key = var.nomad_gossip_key
     nomad_servers    = var.servers
+    cni_plugin_url = var.cni_plugin_url
 
     # Nomad jobs
     fabio_url      = var.fabio_url
-    hashiui_url    = var.hashiui_url
+    
 
     # Vault
     vault_url        = var.vault_url
@@ -78,14 +80,14 @@ resource "aws_instance" "server" {
   iam_instance_profile   = aws_iam_instance_profile.consul-join.name
   vpc_security_group_ids = [aws_security_group.demostack.id]
   root_block_device{
-    volume_size           = "50"
+    volume_size           = "240"
     delete_on_termination = "true"
   }
 
    ebs_block_device  {
     device_name           = "/dev/xvdd"
     volume_type           = "gp2"
-    volume_size           = "50"
+    volume_size           = "240"
     delete_on_termination = "true"
 }
 

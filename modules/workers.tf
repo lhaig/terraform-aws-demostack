@@ -20,6 +20,7 @@ data "template_file" "workers" {
     me_ca   = var.ca_cert_pem
     me_cert = "${element(tls_locally_signed_cert.workers.*.cert_pem, count.index)}"
     me_key  = "${element(tls_private_key.workers.*.private_key_pem, count.index)}"
+    public_key = var.public_key
 
     # Consul
     consul_url            = var.consul_url
@@ -30,6 +31,8 @@ data "template_file" "workers" {
 
     # Nomad
     nomad_url      =  var.nomad_url
+    cni_plugin_url = var.cni_plugin_url
+    run_nomad_jobs = var.run_nomad_jobs
 
     # Vault
     vault_url        = var.vault_url
@@ -65,14 +68,14 @@ resource "aws_instance" "workers" {
 
 
   root_block_device{
-    volume_size           = "50"
+    volume_size           = "240"
     delete_on_termination = "true"
   }
 
    ebs_block_device  {
     device_name           = "/dev/xvdd"
     volume_type           = "gp2"
-    volume_size           = "50"
+    volume_size           = "240"
     delete_on_termination = "true"
   }
 

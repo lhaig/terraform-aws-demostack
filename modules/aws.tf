@@ -6,6 +6,11 @@ provider "aws" {
   version = "~> 2.0"
   region  = var.region
 }
+//Getting the Domaing name
+data "aws_route53_zone" "fdqn" {
+  zone_id = var.zone_id
+}
+
 
 data "aws_ami" "ubuntu" {
   most_recent = true
@@ -76,6 +81,34 @@ resource "aws_security_group" "demostack" {
   name_prefix = var.namespace
   vpc_id      = aws_vpc.demostack.id
 
+  # SSH access if host_access_ip has CIDR blocks
+  dynamic "ingress" {
+    for_each = var.host_access_ip
+    content {
+      from_port = 22
+      to_port   = 22
+      protocol  = "tcp"
+      cidr_blocks = [ "${ingress.value}" ]
+    }
+  }
+
+#HTTP 
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+#Demostack LDAP
+  ingress {
+    from_port   = 389
+    to_port     = 389
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+
 #Demostack HTTPS
   ingress {
     from_port   = 443
@@ -84,18 +117,37 @@ resource "aws_security_group" "demostack" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-#HTTP 
-#TODO - Remove when sslcerts are done
+
+#Grafana
   ingress {
-    from_port   = 80
-    to_port     = 80
+    from_port   = 3000
+    to_port     = 3000
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+
+  #Demostack Postgres
+  ingress {
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+#Demostack pgadmin
+  ingress {
+    from_port   = 5050
+    to_port     = 5050
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+
 #Consul and Vault ports
   ingress {
     from_port   = 8000
-    to_port     = 8999
+    to_port     = 9200
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -120,7 +172,7 @@ ingress {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-
+ 
   ingress {
     from_port   = 30000
     to_port     = 39999
@@ -205,7 +257,7 @@ data "aws_iam_policy_document" "vault-server" {
       "logs:*",
       "ec2messages:*",
     ]
-      
+
     resources = ["*"]
   }
 

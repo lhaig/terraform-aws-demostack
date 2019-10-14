@@ -21,28 +21,34 @@ resource "tls_cert_request" "server" {
   dns_names = [
     # Consul
     "${var.namespace}-server-${count.index}.node.consul",
+    "${var.namespace}-server-${count.index}.node.${var.region}.consul",
 
     "*.service.consul",
+    "*.service.${var.region}.consul",
     "*.query.consul",
     "consul.service.consul",
-    "server.dc1.consul",
 
     # Nomad
     "nomad.service.consul",
+    "nomad.service.${var.region}.consul",
+
 
     "client.global.nomad",
     "server.global.nomad",
 
     # Vault
-    "${var.namespace}-server-${count.index}.node.consul",
-
     "vault.service.consul",
     "vault.query.consul",
     "active.vault.service.consul",
+    "active.vault.service.${var.region}.consul",
     "standby.vault.service.consul",
+    "standby.vault.service.${var.region}.consul",
+    "performance-standby.vault.service.consul",
+    "performance-standby.vault.service.${var.region}.consul",
 
     # Common
     "localhost",
+    "*.${var.namespace}.${data.aws_route53_zone.fdqn.name}",
   ]
 
   // ip_addresses = ["${aws_eip.server_ips.*.public_ip }"]
@@ -94,29 +100,34 @@ resource "tls_cert_request" "workers" {
 
   dns_names = [
     # Consul
-    "${var.namespace}-workers-${count.index}.node.consul",
+    "${var.namespace}-worker-${count.index}.node.consul",
+    "${var.namespace}-worker-${count.index}.node.${var.region}.consul",
 
     "*.service.consul",
+    "*.service.${var.region}.consul",
     "*.query.consul",
     "consul.service.consul",
-    "server.dc1.consul",
 
     # Nomad
     "nomad.service.consul",
+    "nomad.service.${var.region}.consul",
 
     "client.global.nomad",
     "server.global.nomad",
 
     # Vault
-    "${var.namespace}-server-${count.index}.node.consul",
-
     "vault.service.consul",
     "vault.query.consul",
     "active.vault.service.consul",
+    "active.vault.service.${var.region}.consul",
     "standby.vault.service.consul",
+    "standby.vault.service.${var.region}.consul",
+    "performance-standby.vault.service.consul",
+    "performance-standby.vault.service.${var.region}.consul",
 
     # Common
     "localhost",
+    "*.${var.namespace}.${data.aws_route53_zone.fdqn.name}",
   ]
 
   /*
@@ -148,9 +159,12 @@ resource "tls_locally_signed_cert" "workers" {
   ]
 }
 
+
 // ALB certs
 resource "aws_acm_certificate" "cert" {
-  domain_name       = "*.${var.namespace}.aws.hashidemos.io"
+
+  domain_name       = "*.${var.namespace}.${data.aws_route53_zone.fdqn.name}"
+
   validation_method = "DNS"
 
   tags = {
